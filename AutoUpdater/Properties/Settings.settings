@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="KCVUpdateUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://raw.github.com/FreyYa/KCVKrTranslation/master/resources/Version.xml</Value>
+      <Value Profile="(Default)">https://raw.github.com/CirnoV/KCVKrTranslation/master/resources/Version.xml</Value>
     </Setting>
     <Setting Name="KCVTestUpdateUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://raw.github.com/FreyYa/KCVKrTranslation/master/resources/TestVersion.xml</Value>
+      <Value Profile="(Default)">https://raw.github.com/CirnoV/KCVKrTranslation/master/resources/TestVersion.xml</Value>
     </Setting>
   </Settings>
 </SettingsFile>
