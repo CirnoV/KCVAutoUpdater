@@ -25,7 +25,7 @@ namespace AutoUpdater.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.github.com/FreyYa/KCVKrTranslation/master/resources/Version.xml")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.github.com/CirnoV/KCVKrTranslation/master/resources/Version.xml")]
         public string KCVUpdateUrl {
             get {
                 return ((string)(this["KCVUpdateUrl"]));
@@ -34,7 +34,7 @@ namespace AutoUpdater.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.github.com/FreyYa/KCVKrTranslation/master/resources/TestVersion.xml")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.github.com/CirnoV/KCVKrTranslation/master/resources/TestVersion.xml")]
         public string KCVTestUpdateUrl {
             get {
                 return ((string)(this["KCVTestUpdateUrl"]));
