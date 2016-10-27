@@ -49,9 +49,22 @@ namespace AutoUpdater
 
 				UpdaterCore UpdateCore = new UpdaterCore();
 				var upperDirectory = UpdateCore.UpperFolder(CurrentDirectory);
+				if (!AfterSelfUpdate && File.Exists(Path.Combine(upperDirectory, "AutoUpdater.exe")))
+				{
+					Console.WriteLine("상위폴더에 AutoUpdater.exe가 감지되었습니다. 자가업데이트를 시행합니다.");
+					Deflate.Current.CopyFolder(CurrentDirectory, upperDirectory, false);
+
+					Process newProcess = new Process();
+					newProcess.StartInfo.FileName = "AutoUpdater.exe";
+					newProcess.StartInfo.WorkingDirectory = upperDirectory;
+					newProcess.StartInfo.Arguments = "renew";
+					newProcess.Start();
+					newProcess.Refresh();
+					return;
+				}
+
 				upperDirectory = UpdateCore.UpperFolder(upperDirectory);
 				// 패치 후 2단계 위로 가야 함 UpdaterTemp/AutoUpdater/AutoUpdater.exe
-
 				if (!AfterSelfUpdate && File.Exists(Path.Combine(upperDirectory, "AutoUpdater.exe")))
 				{
 					Console.WriteLine("상위폴더에 AutoUpdater.exe가 감지되었습니다. 자가업데이트를 시행합니다.");
