@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("제독업무도 바빠! 자동 업데이트 프로그램")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("KCVkr.Tistory.com")]
-[assembly: AssemblyProduct("KCV Auto Updater")]
-[assembly: AssemblyCopyright("Copyright ©  2015 FreyYa")]
+[assembly: AssemblyCompany("kcvkr.tistory.com")]
+[assembly: AssemblyProduct("KanColleViewer Auto Updater")]
+[assembly: AssemblyCopyright("Copyright © 2016 WolfgangKurz")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,4 +28,4 @@ using System.Runtime.InteropServices;
 // 모든 값을 지정하거나 아래와 같이 '*'를 사용하여 빌드 번호 및 수정 버전이 자동으로
 // 지정되도록 할 수 있습니다.
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.11.0")]
+[assembly: AssemblyVersion("1.0.12.0")]

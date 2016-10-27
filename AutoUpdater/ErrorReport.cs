@@ -4,15 +4,20 @@ using System.IO;
 
 namespace AutoUpdater
 {
+	/// <summary>
+	/// 처리되지 않은 오류가 발생했을 때 error.log 로 저장하는 처리를 하는 클래스입니다.
+	/// </summary>
 	public class ErrorReport
 	{
 		public ErrorReport()
 		{
-			AppDomain.CurrentDomain.UnhandledException += (sender, args) => ReportException(sender, args.ExceptionObject as Exception);
+			AppDomain.CurrentDomain.UnhandledException +=
+				(sender, args) => ReportException(sender, args.ExceptionObject as Exception);
 		}
+
 		private static void ReportException(object sender, Exception exception)
 		{
-			#region const
+			#region 상수
 			const string messageFormat = @"
 ===========================================================
 ERROR, date = {0}, sender = {1},
@@ -35,7 +40,7 @@ ERROR, date = {0}, sender = {1},
 		}
 		public void catcherror(Exception e,string MainFolder)
 		{
-			#region const
+			#region 상수
 			const string messageFormat = @"
 ===========================================================
 ERROR, date = {0}, sender = {1},
@@ -43,7 +48,6 @@ ERROR, date = {0}, sender = {1},
 ";
 			const string path = "error.log";
 			#endregion
-
 
 			var message = string.Format(messageFormat, DateTimeOffset.Now, AppDomain.CurrentDomain, e);
 

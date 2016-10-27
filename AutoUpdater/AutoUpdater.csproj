@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ErrorReport.cs" />
+    <Compile Include="KCVKiller.cs" />
     <Compile Include="Updater.cs" />
     <Compile Include="UpdaterCore.cs" />
     <Compile Include="Deflate.cs" />
@@ -79,12 +80,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KCVKiller\KCVKiller.csproj">
-      <Project>{fedf199e-9d93-4538-97e3-50d7b345ef6c}</Project>
-      <Name>KCVKiller</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

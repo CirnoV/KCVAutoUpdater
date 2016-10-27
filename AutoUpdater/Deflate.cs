@@ -5,61 +5,59 @@ namespace AutoUpdater
 {
 	public class Deflate
 	{
-		#region singleton
+		public static Deflate Current { get; } = new Deflate(); // Singleton
 
-		private static Deflate current = new Deflate();
-
-		public static Deflate Current
-		{
-			get { return current; }
-		}
-
-		#endregion
-
-
-		public void ExtractZip(string fileLocation, string ExtractLocation)
-		{
-			ZipFile.ExtractToDirectory(fileLocation, ExtractLocation);
-		}
 		/// <summary>
-		/// 폴더 복사 작업이 끝나면 sourceFolder를 삭제한다.
+		/// Zip 파일의 압축을 풉니다.
 		/// </summary>
-		/// <param name="sourceFolder">복사할 폴더가 있는 경로</param>
-		/// <param name="destFolder">붙여넣기할 경로</param>
-		public void CopyFolder(string sourceFolder, string destFolder, bool IsSelfUpdate = false)
+		/// <param name="SourceFile">압축을 풀 Zip 파일의 경로입니다.</param>
+		/// <param name="ExtractLocation">압축을 풀 대상 디렉토리입니다.</param>
+		public void ExtractZip(string SourceFile, string ExtractLocation)
 		{
-			if (!Directory.Exists(destFolder))
-				Directory.CreateDirectory(destFolder);
+			ZipFile.ExtractToDirectory(SourceFile, ExtractLocation);
+		}
 
-			string[] files = Directory.GetFiles(sourceFolder);
-			string[] folders = Directory.GetDirectories(sourceFolder);
+		/// <summary>
+		/// 폴더를 복사하고, 설정된 경우 원본 디렉토리를 삭제합니다.
+		/// </summary>
+		/// <param name="SourceDirectory">복사할 원본 디렉토리입니다.</param>
+		/// <param name="DestDirectory">대상 디렉토리입니다.</param>
+		/// <param name="RemoveSourceAfterCopy">복사 후 원본 디렉토리를 삭제할지 여부입니다.</param>
+		public void CopyFolder(string SourceDirectory, string DestDirectory, bool RemoveSourceAfterCopy = false)
+		{
+			if (!Directory.Exists(DestDirectory))
+				Directory.CreateDirectory(DestDirectory);
 
+			string[] files = Directory.GetFiles(SourceDirectory);
+			string[] directories = Directory.GetDirectories(SourceDirectory);
+
+			// 파일 복사
 			foreach (string file in files)
 			{
 				string name = Path.GetFileName(file);
-				string dest = Path.Combine(destFolder, name);
-				if (!IsSelfUpdate)
+				string dest = Path.Combine(DestDirectory, name);
+
+				if(!RemoveSourceAfterCopy)
+					File.Copy(file, dest, true);
+				else
 				{
 					if (!file.Contains("AutoUpdater.exe"))
 						if (!file.Contains("CommandLine.dll"))
 							if (!file.Contains("KCVKiller.dll"))
 								File.Copy(file, dest, true);
 				}
-				else
-				{
-					File.Copy(file, dest, true);
-				}
-
 			}
 
-			// foreach 안에서 재귀 함수를 통해서 폴더 복사 및 파일 복사 진행 완료
-			foreach (string folder in folders)
+			// foreach 안에서 재귀 함수를 통해서 폴더 복사 및 파일 복사 진행
+			foreach (string directory in directories)
 			{
-				string name = Path.GetFileName(folder);
-				string dest = Path.Combine(destFolder, name);
-				CopyFolder(folder, dest, IsSelfUpdate);
+				string name = Path.GetFileName(directory);
+				string dest = Path.Combine(DestDirectory, name);
+				CopyFolder(directory, dest, RemoveSourceAfterCopy);
 			}
-			if (!IsSelfUpdate) Directory.Delete(sourceFolder, true);
+
+			if (RemoveSourceAfterCopy)
+				Directory.Delete(SourceDirectory, true);
 		}
 
 	}
