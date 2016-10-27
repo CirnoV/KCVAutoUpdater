@@ -205,7 +205,7 @@ namespace AutoUpdater
 			Directory.CreateDirectory(TempDirectory);
 
 			Console.WriteLine("최신 파일 다운로드 시작...");
-			statusint = Updater.Current.UpdateFile(IsSelfUpdate, RemoteURL.ToString(), LocalDestination, LocalVersion.ToString());
+			statusint = Updater.Current.UpdateFile(IsSelfUpdate, RemoteURL.ToString(), LocalDestination, LocalVersion.FileVersion);
 			switch (statusint)
 			{
 				case 1:
