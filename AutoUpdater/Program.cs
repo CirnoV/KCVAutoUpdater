@@ -29,6 +29,8 @@ namespace AutoUpdater
 			// 상위 폴더 업데이터 [../AutoUpdater.exe]
 
 
+			Thread.Sleep(3000);
+
 			// 기존 업데이트중 실패한 파일 혹은 자가 업데이트로 남은 폴더 삭제
 			var TempDirectories = new string[]
 			{
