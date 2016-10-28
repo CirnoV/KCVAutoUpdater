@@ -1,5 +1,4 @@
-﻿using KCVKiller;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -13,17 +12,16 @@ namespace AutoUpdater
 		{
 			ErrorReport error = new ErrorReport();
 
-			KCVKillers ProcessKiller = new KCVKillers();
 			var CurrentDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
 			bool AfterSelfUpdate = false;
 
 			Console.Title = "제독업무도 바빠! 자동 업데이트 프로그램";
 
 			string ProgramVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-			Console.WriteLine("제독업무도 바빠! 자동 업데이트 프로그램");
-			Console.WriteLine("AutoUpdater Version: " + ProgramVersion);
-			Console.WriteLine("----------------------------------------------");
-			Console.WriteLine();
+			ErrorReport.WriteLine("제독업무도 바빠! 자동 업데이트 프로그램");
+			ErrorReport.WriteLine("AutoUpdater Version: " + ProgramVersion);
+			ErrorReport.WriteLine("----------------------------------------------");
+			ErrorReport.WriteLine();
 
 			// 자가 업데이트를 수행하는 경우, tmp 폴더에 다운로드 후 실행
 			// 상위 폴더에 업데이터가 존재하는 경우 본인을 상위 폴더에 복사 후
@@ -32,9 +30,17 @@ namespace AutoUpdater
 
 
 			// 기존 업데이트중 실패한 파일 혹은 자가 업데이트로 남은 폴더 삭제
-			var UpdateTempDirectory = Path.Combine(CurrentDirectory, UpdaterCore.UpdateDirectory);
-			if (Directory.Exists(UpdateTempDirectory))
-				Directory.Delete(UpdateTempDirectory, true);
+			var TempDirectories = new string[]
+			{
+				UpdaterCore.UpdateDirectory,
+				"UpdateBin", "tmp"
+			};
+			foreach (var Temp in TempDirectories)
+			{
+				var UpdateTempDirectory = Path.Combine(CurrentDirectory, Temp);
+				if (Directory.Exists(UpdateTempDirectory))
+					Directory.Delete(UpdateTempDirectory, true);
+			}
 
 			try
 			{
@@ -48,82 +54,32 @@ namespace AutoUpdater
 				}
 
 				UpdaterCore UpdateCore = new UpdaterCore();
-				var upperDirectory = UpdateCore.UpperFolder(CurrentDirectory);
-				if (!AfterSelfUpdate && File.Exists(Path.Combine(upperDirectory, "AutoUpdater.exe")))
-				{
-					Console.WriteLine("상위폴더에 AutoUpdater.exe가 감지되었습니다. 자가업데이트를 시행합니다.");
-					Deflate.Current.CopyFolder(CurrentDirectory, upperDirectory, false);
+				var upperDirectory = CurrentDirectory;
 
-					Process newProcess = new Process();
-					newProcess.StartInfo.FileName = "AutoUpdater.exe";
-					newProcess.StartInfo.WorkingDirectory = upperDirectory;
-					newProcess.StartInfo.Arguments = "renew";
-					newProcess.Start();
-					newProcess.Refresh();
-					return;
-				}
-
-				upperDirectory = UpdateCore.UpperFolder(upperDirectory);
-				// 패치 후 2단계 위로 가야 함 UpdaterTemp/AutoUpdater/AutoUpdater.exe
-				if (!AfterSelfUpdate && File.Exists(Path.Combine(upperDirectory, "AutoUpdater.exe")))
-				{
-					Console.WriteLine("상위폴더에 AutoUpdater.exe가 감지되었습니다. 자가업데이트를 시행합니다.");
-					Deflate.Current.CopyFolder(CurrentDirectory, upperDirectory, false);
-
-					Process newProcess = new Process();
-					newProcess.StartInfo.FileName = "AutoUpdater.exe";
-					newProcess.StartInfo.WorkingDirectory = upperDirectory;
-					newProcess.StartInfo.Arguments = "renew";
-					newProcess.Start();
-					newProcess.Refresh();
-					return;
-				}
-
-				int dispCount = 0, totalCount = 0;
-				string[] dispTable = new string[] {
-					".   ", " .  ", "  . ",
-					"   .", "  . ", " .  "
-				};
-				while (true)
-				{
-					Console.CursorLeft = 0;
-					Console.Write("제독업무도 바빠!의 종료를 확인중입니다 ");
-					Console.Write($"[{dispTable[dispCount % 7]}]");
-
-					if (++dispCount >= 6)
+				try
+				{ // 상위 폴더가 없을수도 있음
+					for (int i = 0; i < 2; i++)
 					{
-						dispCount = 0;
-						totalCount++;
-
-						ProcessKiller.KCV();
-						if (ProcessKiller.IsKCVDead) break;
-
-						if (totalCount == 10)
+						upperDirectory = UpdateCore.UpperFolder(CurrentDirectory);
+						if (!AfterSelfUpdate && File.Exists(Path.Combine(upperDirectory, "AutoUpdater.exe")))
 						{
-							Console.WriteLine();
-							Console.WriteLine();
-							Console.WriteLine("뷰어 프로세스가 정상적으로 종료되지 않았습니다.");
-							Console.WriteLine("윈도우 작업 관리자를 통해 직접 뷰어 프로세스를 종료해주시기 바랍니다.");
-							Console.CursorTop = 4;
+							ErrorReport.WriteLine("상위폴더에 AutoUpdater.exe가 감지되었습니다. 자가업데이트를 시행합니다.");
+							Deflate.Current.CopyFolder(CurrentDirectory, upperDirectory, false);
+
+							Process newProcess = new Process();
+							newProcess.StartInfo.FileName = "AutoUpdater.exe";
+							newProcess.StartInfo.WorkingDirectory = upperDirectory;
+							newProcess.StartInfo.Arguments = "renew";
+							newProcess.Start();
+							newProcess.Refresh();
+							return;
 						}
 					}
-
-					Thread.Sleep(250);
 				}
+				catch { }
 
-				Console.CursorTop = 5;
-				Console.CursorLeft = 0;
-				for (int i = 0; i < 4; i++)
-					Console.WriteLine("                                                                               ");
-				// 작업관리자 메시지 지우기
-
-				Console.CursorTop = 4;
-				Console.CursorLeft = 0;
-				Console.WriteLine("제독업무도 바빠!의 종료를 확인중입니다 [ OK ]");
-				Console.WriteLine();
-
-				Console.WriteLine("서버로부터 버전 정보를 받는중...");
-				Console.WriteLine();
+				ErrorReport.WriteLine("서버로부터 버전 정보를 받는중...");
+				ErrorReport.WriteLine();
 
 				UpdateCore.Prepare();
 
@@ -136,12 +92,14 @@ namespace AutoUpdater
 				}
 				else // KanColleViewer.exe 파일이 없는경우
 				{
-					Console.WriteLine("제독업무도 바빠!의 실행파일이 없습니다!");
-					Console.WriteLine();
-					Console.Write("최신버전을 새로 다운로드/설치하시겠습니까? (y/n): ");
+					ErrorReport.WriteLine("제독업무도 바빠!의 실행파일이 없습니다!");
+					ErrorReport.WriteLine();
+					ErrorReport.Write("최신버전을 새로 다운로드/설치하시겠습니까? (y/n): ");
+					ErrorReport.Write("", true);
 
-					var t = System.Console.ReadLine();
+					var t = Console.ReadLine();
 					if (t.Length <= 0) return;
+
 					if ("yYㅛ".Contains(t.Substring(0, 1)))
 						UpdateCore.Update(false, CurrentDirectory);
 				}
@@ -149,8 +107,28 @@ namespace AutoUpdater
 			catch (Exception e)
 			{
 				error.catcherror(e, CurrentDirectory);
-				Console.WriteLine("에러발생 : ");
-				Console.WriteLine(e.Message);
+				ErrorReport.WriteLine("에러발생 : ");
+				ErrorReport.WriteLine(e.Message);
+			}
+
+			ErrorReport.WriteLine();
+			ErrorReport.Write("자동 업데이트를 종료합니다... in ");
+			{
+				int cursorX = Console.CursorLeft;
+				int cursorY = Console.CursorTop;
+
+				for (int i = 3; i >= 0; i--)
+				{
+					Console.CursorLeft = cursorX;
+					Console.CursorTop = cursorY;
+					Console.Write("                ");
+
+					Console.CursorLeft = cursorX;
+					Console.CursorTop = cursorY;
+					ErrorReport.Write(i + " sec", true);
+
+					Thread.Sleep(1000);
+				}
 			}
 		}
 	}

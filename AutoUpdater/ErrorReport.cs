@@ -11,8 +11,24 @@ namespace AutoUpdater
 	{
 		public ErrorReport()
 		{
+			const string path = "AutoUpdater.log";
+
 			AppDomain.CurrentDomain.UnhandledException +=
 				(sender, args) => ReportException(sender, args.ExceptionObject as Exception);
+
+			try
+			{
+				if (File.Exists(path))
+					File.Delete(path);
+
+				TextWriterTraceListener tr = new TextWriterTraceListener(File.CreateText(path));
+				tr.Name = "AutoUpdater";
+				tr.TraceOutputOptions = TraceOptions.DateTime;
+
+				Trace.Listeners.Add(tr);
+				Trace.AutoFlush = true;
+			}
+			catch { }
 		}
 
 		private static void ReportException(object sender, Exception exception)
@@ -53,6 +69,19 @@ ERROR, date = {0}, sender = {1},
 
 			Debug.WriteLine(message);
 			File.AppendAllText(Path.Combine(MainFolder, path), message);
+		}
+
+		public static void Write(string Text = "", bool LogNewLine = false)
+		{
+			if(LogNewLine) Trace.WriteLine(Text);
+			else Trace.Write(Text);
+
+			Console.Write(Text);
+		}
+		public static void WriteLine(string Text = "")
+		{
+			Trace.WriteLine(Text);
+			Console.WriteLine(Text);
 		}
 	}
 }

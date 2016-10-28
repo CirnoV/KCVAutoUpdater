@@ -110,25 +110,87 @@ namespace AutoUpdater
 		/// <returns>1: 성공, -1: 실패, 0: 없음</returns>
 		public int UpdateFile(bool IsSelfUpdate, string RemoteURL, string LocalPath, string LocalVersion)
 		{
-			var MainFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+			var currentTime = new Func<long>(() => (long)(DateTime.UtcNow - DateTime.MinValue).TotalMilliseconds);
+
+			int cursorX = Console.CursorLeft;
+			int cursorY = Console.CursorTop;
+			bool DownloadEnd = true;
+			long PrevBytes = 0;
+			int nResult = 0;
+			long time = currentTime();
 
 			using (WebClient Client = new WebClient())
 			{
+				Client.DownloadProgressChanged += (s, e) =>
+				{
+					if (currentTime() - time < 500) return;
+					time = currentTime();
+
+					Console.CursorLeft = cursorX;
+					Console.CursorTop = cursorY;
+					Console.Write("                                                            ");
+
+					Console.CursorLeft = cursorX;
+					Console.CursorTop = cursorY;
+					ErrorReport.Write(string.Format(
+						"[{0} / {1}, {2}/s]",
+						MeasureSize(e.BytesReceived),
+						MeasureSize(e.TotalBytesToReceive),
+						MeasureSize((long)((e.BytesReceived - PrevBytes) / 0.5m))
+					), true);
+
+					PrevBytes = e.BytesReceived;
+				};
+				Client.DownloadFileCompleted += (s, e) =>
+				{
+					Console.CursorLeft = cursorX;
+					Console.CursorTop = cursorY;
+					Console.Write("                                                            ");
+
+					Console.CursorLeft = cursorX;
+					Console.CursorTop = cursorY;
+					ErrorReport.WriteLine("[ OK ]");
+
+					DownloadEnd = true;
+				};
+
 				try
 				{
 					if (IsSelfUpdate || "Forced Upgrades".Equals(LocalVersion) || IsOnlineVersionGreater(IsSelfUpdate, LocalVersion))
 					{
-						Client.DownloadFile(RemoteURL, LocalPath);
-						return 1;
+						DownloadEnd = false;
+						Client.DownloadFileAsync(new Uri(RemoteURL), LocalPath);
+						nResult = 1;
 					}
 				}
 				catch
 				{
 					// 다운로드를 실패한 경우
-					return -1;
+					nResult = -1;
 				}
+
+				while (!DownloadEnd)
+					System.Threading.Thread.Sleep(500);
 			}
-			return 0;
+			return nResult;
+		}
+
+		private string MeasureSize(long bytes)
+		{
+			string[] Units = new string[]
+			{
+				"bytes","KBs","MBs","GBs","TBs"
+			};
+
+			decimal x = bytes;
+			int unit = 0;
+
+			while (x >= 1000.0m)
+			{
+				x /= 1000.0m;
+				unit++;
+			}
+			return string.Format("{0} {1}", decimal.Round(x, 2).ToString(), Units[unit]);
 		}
 	}
 }
