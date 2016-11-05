@@ -65,7 +65,7 @@ namespace AutoUpdater
 				{ // 상위 폴더가 없을수도 있음
 					for (int i = 0; i < 2; i++)
 					{
-						upperDirectory = UpdateCore.UpperFolder(CurrentDirectory);
+						upperDirectory = UpdateCore.UpperFolder(upperDirectory);
 						if (!AfterSelfUpdate && File.Exists(Path.Combine(upperDirectory, "AutoUpdater.exe")))
 						{
 							ErrorReport.WriteLine("상위폴더에 AutoUpdater.exe가 감지되었습니다. 자가업데이트를 시행합니다.");
