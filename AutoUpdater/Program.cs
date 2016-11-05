@@ -28,8 +28,7 @@ namespace AutoUpdater
 			// renew 파라메터로 실행, tmp 폴더가 삭제됨
 			// 상위 폴더 업데이터 [../AutoUpdater.exe]
 
-
-			Thread.Sleep(3000);
+			Thread.Sleep(3500);
 
 			// 기존 업데이트중 실패한 파일 혹은 자가 업데이트로 남은 폴더 삭제
 			var TempDirectories = new string[]
@@ -40,8 +39,12 @@ namespace AutoUpdater
 			foreach (var Temp in TempDirectories)
 			{
 				var UpdateTempDirectory = Path.Combine(CurrentDirectory, Temp);
-				if (Directory.Exists(UpdateTempDirectory))
-					Directory.Delete(UpdateTempDirectory, true);
+				try
+				{
+					if (Directory.Exists(UpdateTempDirectory))
+						Directory.Delete(UpdateTempDirectory, true);
+				}
+				catch { }
 			}
 
 			try
@@ -119,7 +122,7 @@ namespace AutoUpdater
 				int cursorX = Console.CursorLeft;
 				int cursorY = Console.CursorTop;
 
-				for (int i = 3; i >= 0; i--)
+				for (int i = 2; i >= 0; i--)
 				{
 					Console.CursorLeft = cursorX;
 					Console.CursorTop = cursorY;
