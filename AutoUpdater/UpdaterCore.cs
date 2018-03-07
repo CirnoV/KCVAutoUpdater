@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using AppSettings = AutoUpdater.Properties.Settings;
 
 namespace AutoUpdater
@@ -44,6 +45,7 @@ namespace AutoUpdater
 
 			var OnlineVersion = Updater.Current.GetOnlineVersion(IsSelfUpdate, false);
 
+			Task<int> UpdateTask = null;
 			int statusint = 0;
 			string status = "";
 
@@ -71,12 +73,14 @@ namespace AutoUpdater
 				if (NeedToUpdate)
 				{
 					ErrorReport.Write("최신 파일 다운로드 시작... ");
-					statusint = Updater.Current.UpdateFile(
+					UpdateTask = Updater.Current.UpdateFile(
 						IsSelfUpdate,
 						RemoteURL.ToString(),
 						LocalDestination,
 						LocalVersion.FileVersion
 					);
+					UpdateTask.Wait();
+					statusint = UpdateTask.Result;
 				}
 
 				switch (statusint)
@@ -130,7 +134,10 @@ namespace AutoUpdater
 				Directory.CreateDirectory(TempDirectory);
 
 				ErrorReport.Write("최신 파일 다운로드 시작... ");
-				statusint = Updater.Current.UpdateFile(IsSelfUpdate, RemoteURL.ToString(), LocalDestination, "Forced Upgrades");
+
+				UpdateTask = Updater.Current.UpdateFile(IsSelfUpdate, RemoteURL.ToString(), LocalDestination, "Forced Upgrades");
+				UpdateTask.Wait();
+				statusint = UpdateTask.Result;
 
 				switch (statusint)
 				{
@@ -198,7 +205,11 @@ namespace AutoUpdater
 			Directory.CreateDirectory(TempDirectory);
 
 			ErrorReport.Write("최신 파일 다운로드 시작... ");
-			statusint = Updater.Current.UpdateFile(IsSelfUpdate, RemoteURL.ToString(), LocalDestination, LocalVersion.FileVersion);
+
+			UpdateTask = Updater.Current.UpdateFile(IsSelfUpdate, RemoteURL.ToString(), LocalDestination, LocalVersion.FileVersion);
+			UpdateTask.Wait();
+			statusint = UpdateTask.Result;
+
 			switch (statusint)
 			{
 				case 1:

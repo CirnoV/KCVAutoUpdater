@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Xml.Linq;
+using System.Threading.Tasks;
 
 namespace AutoUpdater
 {
@@ -108,16 +109,21 @@ namespace AutoUpdater
 		/// <param name="LocalPath">다운로드 받을 로컬 경로입니다.</param>
 		/// <param name="LocalVersion">로컬에 존재하는 프로그램의 현재 버전입니다.</param>
 		/// <returns>1: 성공, -1: 실패, 0: 없음</returns>
-		public int UpdateFile(bool IsSelfUpdate, string RemoteURL, string LocalPath, string LocalVersion)
+		public async Task<int> UpdateFile(bool IsSelfUpdate, string RemoteURL, string LocalPath, string LocalVersion)
 		{
 			var currentTime = new Func<long>(() => (long)(DateTime.UtcNow - DateTime.MinValue).TotalMilliseconds);
 
-			int cursorX = Console.CursorLeft;
-			int cursorY = Console.CursorTop;
-			bool DownloadEnd = true;
-			long PrevBytes = 0;
-			int nResult = 0;
-			long time = currentTime();
+			var cursorX = Console.CursorLeft;
+			var cursorY = Console.CursorTop;
+			var PrevBytes = 0L;
+			var nResult = 0;
+			var time = currentTime();
+
+			const int MaxRetries = 5;
+			int Retries = 0;
+
+			// Fix SSL/TLS issue, specify security protocols
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
 			using (WebClient Client = new WebClient())
 			{
@@ -150,27 +156,36 @@ namespace AutoUpdater
 					Console.CursorLeft = cursorX;
 					Console.CursorTop = cursorY;
 					ErrorReport.WriteLine("[ OK ]");
-
-					DownloadEnd = true;
 				};
 
-				try
+				while (Retries < MaxRetries)
 				{
-					if (IsSelfUpdate || "Forced Upgrades".Equals(LocalVersion) || IsOnlineVersionGreater(IsSelfUpdate, LocalVersion))
+					try
 					{
-						DownloadEnd = false;
-						Client.DownloadFileAsync(new Uri(RemoteURL), LocalPath);
-						nResult = 1;
+						if (IsSelfUpdate || "Forced Upgrades".Equals(LocalVersion) || IsOnlineVersionGreater(IsSelfUpdate, LocalVersion))
+						{
+							await Client.DownloadFileTaskAsync(new Uri(RemoteURL), LocalPath);
+							nResult = 1;
+						}
+					}
+					catch(Exception e)
+					{
+						// 오류가 발생해 다운로드를 실패한 경우
+						ErrorReport.WriteLine(e.ToString());
+						nResult = -1;
+					}
+
+					// 알 수 없는 오류로 다운로드를 실패한 경우
+					var fi = new FileInfo(LocalPath);
+					if (!fi.Exists || fi.Length == 0)
+						nResult = -1;
+
+					if (nResult == -1)
+					{
+						Retries++;
+						ErrorReport.WriteLine(string.Format("오류가 발생하여 재시작합니다. ({0}/{1})", Retries, MaxRetries));
 					}
 				}
-				catch
-				{
-					// 다운로드를 실패한 경우
-					nResult = -1;
-				}
-
-				while (!DownloadEnd)
-					System.Threading.Thread.Sleep(500);
 			}
 			return nResult;
 		}
