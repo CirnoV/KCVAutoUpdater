@@ -185,6 +185,8 @@ namespace AutoUpdater
 						Retries++;
 						ErrorReport.WriteLine(string.Format("오류가 발생하여 재시작합니다. ({0}/{1})", Retries, MaxRetries));
 					}
+					else
+						break;
 				}
 			}
 			return nResult;
